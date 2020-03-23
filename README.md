@@ -104,4 +104,3 @@ After you load those files a main window with three tabs opens, they are:
         - utter_did_that_help
     * deny
         - utter_goodbye
-    ```

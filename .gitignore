@@ -1,3 +1,6 @@
 *.pyc
 export/*
 .idea/*
+build/*
+rasa_storyteller.egg-info/*
+dist/*
