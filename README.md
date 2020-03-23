@@ -28,24 +28,23 @@ No problem 👍🏼. You can also train a model later by going to the project di
 After that we should go to the directory with our new project and find three files: `domain.yml`, `data/nlu.md`, `stories.md`.
 Launch our utility and locate those files in the start window:    
 
-![initial_windows](docs/images/locate_files.png)
-
+![initial_windows](docs/images/locate_files.png)  
 After you load those files a main window with three tabs opens, they are:
 
  - intents:  
-    ![intent_tab](docs/images/intents_window.png)
+    ![intent_tab](docs/images/intents_window.png)  
   You can easily add new intents or new nlu examples, update or remove existing intents in this window.
     
  - responses:  
-    ![responses_tab](docs/images/responses_window.png)
-  Using this window you can do CRUD operations with responses in this window.
+    ![responses_tab](docs/images/responses_window.png)  
+  Using this window you can do CRUD operations with responses.
 
  - stories:  
-    ![stories_window](docs/images/stories_window.png)
+    ![stories_window](docs/images/stories_window.png)  
   The most interesting tab: here stories are presented as trees. You can link your intents with answers or even create new intent/response in-place using right button menu.
   
   When you have created some story with complex logic and multiple branchings like this:  
-     ![complex_story](docs/images/complex_story.png)
+     ![complex_story](docs/images/complex_story.png)  
   
   Just press "export" button at the bottom of the window and `domain.yml`, `data/nlu.md`, `stories.md` will be generated in `<your_working_directory>/export/`. 
   They will be suffixed with current timestamp so you can push "export" multiple times while editing to store different versions.
