@@ -45,8 +45,7 @@ After you load those files a main window with three tabs opens, they are:
   The most interesting tab: here stories are presented as trees. You can link your intents with answers or even create new intent/response in-place using right button menu.
   
   When you have created some story with complex logic and multiple branchings like this:  
-  
-    ![stories_window](docs/images/complex_story.png)
+     ![complex_story](docs/images/complex_story.png)
   
   Just press "export" button at the bottom of the window and `domain.yml`, `data/nlu.md`, `stories.md` will be generated in `<your_working_directory>/export/`. 
   They will be suffixed with current timestamp so you can push "export" multiple times while editing to store different versions.
