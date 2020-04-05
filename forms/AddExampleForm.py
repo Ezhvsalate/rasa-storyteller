@@ -10,15 +10,15 @@ class AddExampleForm(object):
     FORM_NAME = 'Add example'
     INPUT_LABEL = 'Example'
     EMPTY_TEXT_ERROR = "Text cannot be empty."
+    ITEM_WITH_KEY_EXISTS_ERROR = "Item with such name/text already exists."
     INPUT_KEY = 'example_text'
 
-    def __init__(self, return_to, parent_key, parent_type, handler):
+    def __init__(self, return_to, parent_name, handler, tree):
         self.return_to = return_to
-        self.parent_key = parent_key
-        self.parent_type = parent_type
+        self.parent_name = parent_name
         self.handler = handler
+        self.tree = tree
         self.form = sg.FlexForm(self.FORM_NAME, return_keyboard_events=True).layout(self.layout())
-        self.icon = QUESTION_ICON if self.parent_type == TYPE_INTENT else ANSWER_ICON
 
     def layout(self):
         layout = [
@@ -32,6 +32,8 @@ class AddExampleForm(object):
         error = None
         if values[self.INPUT_KEY] == '':
             error = self.EMPTY_TEXT_ERROR
+        if values[self.INPUT_KEY] in self.handler.items:
+            error = self.ITEM_WITH_KEY_EXISTS_ERROR
         return error
 
     def process(self):
@@ -42,10 +44,11 @@ class AddExampleForm(object):
             if button in DEFAULT_FORM_SUBMIT_ACTIONS:
                 error = self.validate(values)
                 if not error:
-                    new_item = self.handler.tree.TreeData.Insert(self.parent_key, key=str(uuid4()), text=values[self.INPUT_KEY], values=[], icon=self.icon)
-                    self.handler.tree.Update(values=self.handler.tree.TreeData)
-                    self.handler.tree.see(new_item)
-                    self.handler.tree.selection_set([new_item])
+                    new_item = values[self.INPUT_KEY]
+                    self.handler.add_example_to_node(self.parent_name, new_item)
+                    self.tree.Update(values=self.handler.export_to_pysg_tree())
+                    self.tree.see(new_item)
+                    self.tree.selection_set([new_item])
                 else:
                     sg.Popup(error, icon=sg.SYSTEM_TRAY_MESSAGE_ICON_CRITICAL, keep_on_top=True)
                 self.form.close()
@@ -53,7 +56,7 @@ class AddExampleForm(object):
             elif button in DEFAULT_FORM_CANCEL_ACTIONS:
                 self.form.close()
                 break
-        self.handler.sort_alphabetically()
+        # self.handler.sort_alphabetically()
         self.return_to.bring_to_front()
         self.return_to.Enable()
         return new_item

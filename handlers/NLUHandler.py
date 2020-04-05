@@ -1,31 +1,18 @@
 from io import StringIO  # Python3
-from uuid import uuid4
 
 import markdown_generator as mg
 
-from common.constants import *
-from core.EditableTreeData import EditableTreeData
-from core.ExtendedTree import ExtendedTree
-from handlers.Handler import Handler
+from handlers.ItemsWithExamplesHandler import ItemsWithExamplesHandler
+from models.Intent import Intent
+from models.IntentExample import IntentExample
 
 
-class NLUHandler(Handler):
+class NLUHandler(ItemsWithExamplesHandler):
 
     def __init__(self, filename, *args):
         super().__init__(filename, *args)
-        self.filename = filename
-        self.items = {}
-        self.tree_data = EditableTreeData()
-        self.tree = ExtendedTree(data=self.tree_data,
-                                 headings=[],
-                                 col0_width=80,
-                                 key=INTENT_TREE_KEY,
-                                 right_click_menu=['Right', ['!Fast actions',
-                                                             ACTION_ADD_INTENT,
-                                                             ACTION_ADD_INTENT_EXAMPLE,
-                                                             ACTION_UPDATE_INTENT,
-                                                             ACTION_REMOVE_INTENT]],
-                                 **TREE_LAYOUT_COMMON_PARAMS)
+        self.parent_nodes_class = Intent
+        self.child_nodes_class = IntentExample
 
     def import_data(self):
         with open(self.filename, 'r', encoding='utf-8') as df:
@@ -34,23 +21,21 @@ class NLUHandler(Handler):
             for line in nlu:
                 if line.startswith("## intent:"):
                     heading = line.split("## intent:")[1].strip()
-                    current_intent = self.tree_data.Insert('', key=str(uuid4()), text=heading, values=[], icon=ANSWER_ICON)
-                    self.items[heading] = current_intent
+                    current_intent = Intent(name=heading, parent=self.tree)
+                    self.add_to_items(heading)
                 if line.startswith("- "):
-                    answer = line.split("- ")[1].strip()
-                    self.tree_data.insert(current_intent, key=str(uuid4()), text=answer, values=[], icon=QUESTION_ICON)
+                    text_example = line.split("- ")[1].strip()
+                    IntentExample(name=text_example, parent=current_intent)
+                    self.add_to_items(text_example)
 
     def export_data(self):
         result = StringIO()
         intents = []
         writer = mg.Writer(result)
-        for item in self.tree_data.dump():
-            intents.append(item['text'])
-            writer.write_heading(f"intent:{item['text']}", 2)
-            examples = [f"- {str(kid['text'])}".strip() for kid in item['children']]
+        for intent in self.tree.children:
+            intents.append(intent.text)
+            writer.write_heading(f"intent:{intent.text}", 2)
+            examples = [f"- {example.text}".strip() for example in intent.children]
             writer.writelines(examples)
         return {"result": result,
                 "intents": intents}
-
-    def sort_alphabetically(self):
-        self.tree.sort_alphabetically()

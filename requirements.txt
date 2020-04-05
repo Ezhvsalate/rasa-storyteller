@@ -1,2 +1,3 @@
 PySimpleGUI==4.16.0
 markdown-generator==0.1.3
+AnyTree==2.8.0

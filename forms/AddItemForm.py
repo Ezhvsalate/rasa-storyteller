@@ -9,16 +9,15 @@ class AddItemForm(object):
     INPUT_EXAMPLES_LABEL = "Text examples (may fill blank some)"
     EMPTY_NAME_ERROR = "Name cannot be empty."
     NO_EXAMPLES_ERROR = "There should be at least one example."
-    NON_UNIQUE_NAME_ERROR = "Name is not unique."
     INPUT_KEY_NAME = 'item_name'
+    ITEM_WITH_KEY_EXISTS_ERROR = "Item with such name/text already exists."
 
-    def __init__(self, return_to, form_name, item_type, handler):
+    def __init__(self, return_to, form_name, item_type, handler, tree):
         self.return_to = return_to
         self.item_type = item_type
         self.handler = handler
         self.form = sg.FlexForm(form_name, return_keyboard_events=True).layout(self.layout())
-        self.parent_icon = ANSWER_ICON
-        self.children_icon = QUESTION_ICON if self.item_type == TYPE_INTENT else ANSWER_ICON
+        self.tree = tree
 
     def layout(self):
         layout = [
@@ -45,8 +44,8 @@ class AddItemForm(object):
             error = self.EMPTY_NAME_ERROR
         elif all([v == '' for k, v in values.items() if k != self.INPUT_KEY_NAME]):
             error = self.NO_EXAMPLES_ERROR
-        elif values[self.INPUT_KEY_NAME] in self.handler.items.keys():
-            error = self.NON_UNIQUE_NAME_ERROR
+        elif values[self.INPUT_KEY_NAME] in self.handler.items:
+            error = self.ITEM_WITH_KEY_EXISTS_ERROR
         return error
 
     def process(self):
@@ -57,10 +56,12 @@ class AddItemForm(object):
             if button in DEFAULT_FORM_SUBMIT_ACTIONS:
                 error = self.validate(values)
                 if not error:
-                    parent_node = TreeNode(text=values[self.INPUT_KEY_NAME], values=[], icon=self.parent_icon)
-                    kids = [TreeNode(text=value, values=[], icon=self.children_icon) for value in [v for k, v in values.items() if k != self.INPUT_KEY_NAME and v != '']]
-                    new_item = self.handler.tree.add_node_to_root_with_children(parent_node, kids)
-                    self.handler.items[values[self.INPUT_KEY_NAME]] = new_item
+                    new_item = values[self.INPUT_KEY_NAME]
+                    children_texts = [value for value in [v for k, v in values.items() if k != self.INPUT_KEY_NAME and v != '']]
+                    self.handler.add_node_with_kids(values[self.INPUT_KEY_NAME], *children_texts)
+                    self.tree.Update(self.handler.export_to_pysg_tree())
+                    self.tree.see(new_item)
+                    self.tree.selection_set([new_item])
                 else:
                     sg.Popup(error, icon=sg.SYSTEM_TRAY_MESSAGE_ICON_CRITICAL, keep_on_top=True)
                 self.form.close()
@@ -68,7 +69,6 @@ class AddItemForm(object):
             elif button in DEFAULT_FORM_CANCEL_ACTIONS:
                 self.form.close()
                 break
-        self.handler.sort_alphabetically()
         self.return_to.bring_to_front()
         self.return_to.Enable()
         return new_item

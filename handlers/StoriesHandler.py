@@ -4,10 +4,10 @@ from uuid import uuid4
 from common.constants import *
 from core.EditableTreeData import EditableTreeData
 from core.ExtendedTree import ExtendedTree
-from handlers.Handler import Handler
+from handlers.AbstractHandler import AbstractHandler
 
 
-class StoriesHandler(Handler):
+class StoriesHandler(AbstractHandler):
 
     def __init__(self, filename, nlu, resp):
         super().__init__(filename, nlu, resp)
