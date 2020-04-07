@@ -1,4 +1,4 @@
-from handlers import StoriesHandler
+from backend.handlers import StoriesHandler
 
 
 class RemoveStoryItemForm(object):

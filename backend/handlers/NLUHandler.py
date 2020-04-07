@@ -2,9 +2,8 @@ from io import StringIO  # Python3
 
 import markdown_generator as mg
 
-from handlers.ItemsWithExamplesHandler import ItemsWithExamplesHandler
-from models.Intent import IntentNode, Intent
-from models.IntentExample import IntentExample
+from backend.handlers.ItemsWithExamplesHandler import ItemsWithExamplesHandler
+from backend.models.Intent import IntentNode, Intent, IntentExample
 
 
 class NLUHandler(ItemsWithExamplesHandler):

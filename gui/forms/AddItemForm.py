@@ -1,7 +1,6 @@
 import PySimpleGUI as sg
 
 from common.constants import *
-from core.TreeNode import TreeNode
 from gui.layout import button_params
 
 

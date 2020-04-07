@@ -1,13 +1,13 @@
 from abc import ABC
 
+from PySimpleGUI import TreeData
 from anytree import Node
 from anytree.search import find
 
+from backend.handlers.AbstractHandler import AbstractHandler
+from backend.models.BaseNode import BaseNode, BaseItem
+from backend.models.Intent import IntentNode
 from common.constants import QUESTION_ICON, ANSWER_ICON
-from core.EditableTreeData import EditableTreeData
-from handlers.AbstractHandler import AbstractHandler
-from models.BaseNode import BaseNode, BaseItem
-from models.Intent import IntentNode
 
 
 class ItemsWithExamplesHandler(AbstractHandler, ABC):
@@ -29,7 +29,7 @@ class ItemsWithExamplesHandler(AbstractHandler, ABC):
 
     def export_to_pysg_tree(self):
         parent_icon = QUESTION_ICON if self.parent_nodes_class == IntentNode else ANSWER_ICON
-        tree_data = EditableTreeData()
+        tree_data = TreeData()
         for item in self.tree.children:
             tree_data.Insert(parent='', key=item.item.name, text=item.item.name, values=[], icon=parent_icon)
             for example in item.children:

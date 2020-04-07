@@ -1,17 +1,18 @@
 import PySimpleGUI as sg
 
 import gui.layout as lt
+from backend.handlers.NLUHandler import NLUHandler
+from backend.handlers.ResponseHandler import ResponseHandler
+from backend.handlers.StoriesHandler import StoriesHandler
 from common.constants import *
-from core.ExtendedTree import ExtendedTree
-from forms.AddExampleForm import AddExampleForm
-from forms.AddItemForm import AddItemForm
-from forms.RemoveItemForm import RemoveItemForm
-from forms.UpdateItemForm import UpdateItemForm
-from forms.AddStoryItemForm import AddStoryItemForm
-from handlers.NLUHandler import NLUHandler
-from handlers.ResponseHandler import ResponseHandler
-from handlers.StoriesHandler import StoriesHandler
-from forms.RemoveStoryItemForm import RemoveStoryItemForm
+from gui.core.ExtendedTree import ExtendedTree
+from gui.forms.AddExampleForm import AddExampleForm
+from gui.forms.AddItemForm import AddItemForm
+from gui.forms.AddStoryItemForm import AddStoryItemForm
+from gui.forms.RemoveItemForm import RemoveItemForm
+from gui.forms.RemoveStoryItemForm import RemoveStoryItemForm
+from gui.forms.UpdateItemForm import UpdateItemForm
+
 
 def launcher():
     import_window_layout = lt.generate_import_window_layout()
@@ -76,9 +77,6 @@ def launcher():
         main_window_layout = lt.generate_main_window_layout(nlu_tree, resp_tree, stories_tree)
         main_window = sg.Window(APP_NAME, main_window_layout, resizable=False)
         main_window.read()
-        # nlu.sort_alphabetically()
-        # resp.sort_alphabetically()
-        # stories.sort_alphabetically()
 
         while True:
             event, values = main_window.read()

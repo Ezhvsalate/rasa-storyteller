@@ -1,17 +1,15 @@
 from io import StringIO
 
-from anytree import RenderTree
+from PySimpleGUI import TreeData
 from anytree.resolver import Resolver
 from anytree.search import find
 
+from backend.handlers import ResponseHandler, NLUHandler
+from backend.handlers.AbstractHandler import AbstractHandler
+from backend.models.BaseNode import BaseNode, BaseItem
+from backend.models.Intent import IntentStoryNode
+from backend.models.Response import ResponseStoryNode
 from common.constants import *
-from core.EditableTreeData import EditableTreeData
-from handlers import NLUHandler
-from handlers import ResponseHandler
-from handlers.AbstractHandler import AbstractHandler
-from models.BaseNode import BaseNode, BaseItem
-from models.Intent import IntentStoryNode
-from models.Response import ResponseStoryNode
 
 
 class StoriesHandler(AbstractHandler):
@@ -54,13 +52,13 @@ class StoriesHandler(AbstractHandler):
             values = " | ".join([kid.name for kid in branch.item.own_tree.children])
             branch_type = TYPE_INTENT if isinstance(branch, IntentStoryNode) else TYPE_RESPONSE
             icon = QUESTION_ICON if branch_type == TYPE_INTENT else ANSWER_ICON
-            new_parent = tree_data.Insert(parent=parent, key=branch.id, text=branch.item.name, values=[branch_type, values], icon=icon)
+            tree_data.Insert(parent=parent, key=branch.id, text=branch.item.name, values=[branch_type, values], icon=icon)
             for child in branch.children:
-                insert_branch(child, new_parent)
+                insert_branch(child, branch.id)
 
-        tree_data = EditableTreeData()
+        tree_data = TreeData()
         for item in self.tree.children:
-            insert_branch(item, '')
+            insert_branch(item, "")
 
         self.export_data()
         return tree_data
@@ -107,4 +105,3 @@ class StoriesHandler(AbstractHandler):
     def remove_item(self, node_id):
         node = find(self.tree, lambda n: n.id == node_id)
         node.parent = None
-

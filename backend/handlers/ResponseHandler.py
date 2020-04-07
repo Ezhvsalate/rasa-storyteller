@@ -1,8 +1,7 @@
 import yaml
 
-from handlers.ItemsWithExamplesHandler import ItemsWithExamplesHandler
-from models.Response import Response, ResponseNode
-from models.ResponseExample import ResponseExample
+from backend.handlers.ItemsWithExamplesHandler import ItemsWithExamplesHandler
+from backend.models.Response import Response, ResponseNode, ResponseExample
 
 
 class ResponseHandler(ItemsWithExamplesHandler):

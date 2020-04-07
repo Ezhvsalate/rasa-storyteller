@@ -3,7 +3,7 @@ from uuid import uuid4
 from anytree import NodeMixin
 
 
-class Intent:
+class Response:
     def __init__(self, name):
         self.name = name
         self.own_tree = None
@@ -13,8 +13,8 @@ class Intent:
         return str(self.name)
 
 
-class IntentNode(NodeMixin):
-    def __init__(self, item: Intent, parent=None):
+class ResponseNode(NodeMixin):
+    def __init__(self, item, parent=None):
         self.item = item
         self.parent = parent
         self.name = self.item.name
@@ -29,8 +29,19 @@ class IntentNode(NodeMixin):
         return str(self.name)
 
 
-class IntentStoryNode(NodeMixin):
-    def __init__(self, item: Intent, parent=None):
+class ResponseExample(NodeMixin):
+
+    def __init__(self, name, parent: ResponseNode):
+        super(ResponseExample, self).__init__()
+        self.name = name
+        self.parent = parent
+
+    def __repr__(self):
+        return str(self.name)
+
+
+class ResponseStoryNode(NodeMixin):
+    def __init__(self, item: Response, parent=None):
         self.item = item
         self.parent = parent
         self.name = self.item.name
