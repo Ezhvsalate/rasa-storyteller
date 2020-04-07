@@ -53,7 +53,8 @@ class StoriesHandler(AbstractHandler):
         def insert_branch(branch, parent):
             values = " | ".join([kid.name for kid in branch.item.own_tree.children])
             branch_type = TYPE_INTENT if isinstance(branch, IntentStoryNode) else TYPE_RESPONSE
-            new_parent = tree_data.Insert(parent=parent, key=branch.id, text=branch.item.name, values=[branch_type, values])
+            icon = QUESTION_ICON if branch_type == TYPE_INTENT else ANSWER_ICON
+            new_parent = tree_data.Insert(parent=parent, key=branch.id, text=branch.item.name, values=[branch_type, values], icon=icon)
             for child in branch.children:
                 insert_branch(child, new_parent)
 
@@ -105,7 +106,5 @@ class StoriesHandler(AbstractHandler):
 
     def remove_item(self, node_id):
         node = find(self.tree, lambda n: n.id == node_id)
-        print(node.item.story_tree)
         node.parent = None
-        print(node.item.story_tree)
 

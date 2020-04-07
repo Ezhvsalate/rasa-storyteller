@@ -3,9 +3,11 @@ from abc import ABC
 from anytree import Node
 from anytree.search import find
 
+from common.constants import QUESTION_ICON, ANSWER_ICON
 from core.EditableTreeData import EditableTreeData
 from handlers.AbstractHandler import AbstractHandler
 from models.BaseNode import BaseNode, BaseItem
+from models.Intent import IntentNode
 
 
 class ItemsWithExamplesHandler(AbstractHandler, ABC):
@@ -26,11 +28,12 @@ class ItemsWithExamplesHandler(AbstractHandler, ABC):
             self.items.append(key)
 
     def export_to_pysg_tree(self):
+        parent_icon = QUESTION_ICON if self.parent_nodes_class == IntentNode else ANSWER_ICON
         tree_data = EditableTreeData()
         for item in self.tree.children:
-            tree_data.Insert(parent='', key=item.item.name, text=item.item.name, values=[])
+            tree_data.Insert(parent='', key=item.item.name, text=item.item.name, values=[], icon=parent_icon)
             for example in item.children:
-                tree_data.Insert(parent=item.item.name, key=example.name, text=example.name, values=[])
+                tree_data.Insert(parent=item.item.name, key=example.name, text=example.name, values=[], icon=ANSWER_ICON)
         return tree_data
 
     def add_node_with_kids(self, parent_name, *kids):
@@ -58,6 +61,8 @@ class ItemsWithExamplesHandler(AbstractHandler, ABC):
         node.name = new_value
         if isinstance(node, self.parent_nodes_class):
             node.item.name = new_value
+            for story_item in node.item.story_tree:
+                story_item.name = new_value
 
     def remove_node(self, node):
         node = find(self.tree, lambda n: n.name == node, maxlevel=3)
