@@ -1,11 +1,11 @@
 from anytree import NodeMixin
 
-from models.Intent import Intent
+from models.Intent import IntentNode
 
 
 class IntentExample(NodeMixin):
 
-    def __init__(self, name, parent: Intent):
+    def __init__(self, name, parent: IntentNode):
         super(IntentExample, self).__init__()
         self.name = name
         self.parent = parent

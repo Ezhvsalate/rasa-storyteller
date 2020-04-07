@@ -1,98 +1,111 @@
 from io import StringIO
-from uuid import uuid4
+
+from anytree import RenderTree
+from anytree.resolver import Resolver
+from anytree.search import find
 
 from common.constants import *
 from core.EditableTreeData import EditableTreeData
-from core.ExtendedTree import ExtendedTree
+from handlers import NLUHandler
+from handlers import ResponseHandler
 from handlers.AbstractHandler import AbstractHandler
+from models.BaseNode import BaseNode, BaseItem
+from models.Intent import IntentStoryNode
+from models.Response import ResponseStoryNode
 
 
 class StoriesHandler(AbstractHandler):
 
-    def __init__(self, filename, nlu, resp):
-        super().__init__(filename, nlu, resp)
+    def __init__(self, filename, nlu: NLUHandler, resp: ResponseHandler):
+        super().__init__(filename)
         self.filename = filename
-        self.response_list = []
-        self.tree_data = EditableTreeData()
+        self.tree = BaseNode(BaseItem(name="root"))
         self.nlu = nlu
         self.resp = resp
-        self.chains = {}
-        self.tree = ExtendedTree(data=self.tree_data,
-                                 headings=['Type', 'Text'],
-                                 col0_width=23,
-                                 col_widths=[7, 50],
-                                 key=STORIES_TREE_KEY,
-                                 right_click_menu=['Right', ['!Fast actions',
-                                                             ACTION_ADD_CHILD,
-                                                             ACTION_ADD_SIBLING,
-                                                             ACTION_MOVE_STORY_ITEM_UP,
-                                                             ACTION_MOVE_STORY_ITEM_DOWN,
-                                                             ACTION_REMOVE_STORY_ITEM,
-                                                             ACTION_ADD_NEW_ITEM_AS_A_CHILD]],
-                                 **TREE_LAYOUT_COMMON_PARAMS)
+        self.resolver = Resolver("name")
 
     def import_data(self):
-
         with open(self.filename, 'r', encoding='utf-8') as stories_file:
             stories = stories_file.readlines()
             for line in stories:
                 if line.startswith("## "):
-                    current_answer = ''
+                    # new story should start from root
+                    current_response = self.tree
                     current_intent = None
-                    last_chain_indent = ''
-                    last_chain_response = ''
 
-                elif line.startswith("* "):
-                    heading = line.split("* ")[-1].strip()
-                    current_chain = str(last_chain_response + '-' + heading).strip("-")
-                    if current_chain not in self.chains:
-                        texts = " | ".join([child.text for child in self.nlu.tree_data.get_node_data_by_key(self.nlu.items[heading])['children']])
-                        current_intent = self.tree_data.Insert(current_answer, key=str(uuid4()), text=heading, values=[TYPE_INTENT, texts], icon=QUESTION_ICON)
-                        self.chains[current_chain] = current_intent
+                elif line.startswith("* "):  # intent
+                    intent_heading = line.split("* ")[-1].strip()
+                    if find(current_response, lambda n: n.name == intent_heading and isinstance(n, IntentStoryNode), maxlevel=2):
+                        current_intent = find(current_response, lambda n: n.name == intent_heading and isinstance(n, IntentStoryNode), maxlevel=2)
                     else:
-                        current_intent = self.chains[current_chain]
-                    last_chain_indent = current_chain
+                        nlu_node = find(self.nlu.tree, lambda n: n.name == intent_heading)
+                        current_intent = IntentStoryNode(item=nlu_node.item, parent=current_response)
 
-                elif line.strip().startswith("- "):
-                    heading = line.split("- ")[-1].strip()
-                    current_chain = (last_chain_indent + '-' + heading).strip("-")
-                    if current_chain not in self.chains:
-                        texts = " | ".join([child.text for child in self.resp.tree_data.get_node_data_by_key(self.resp.items[heading.split("utter_")[-1]])['children']])
-                        current_answer = self.tree_data.Insert(current_intent, key=str(uuid4()), text=heading.split("utter_")[-1], values=[TYPE_RESPONSE, texts], icon=ANSWER_ICON)
-                        self.chains[current_chain] = current_answer
+                elif line.strip().startswith("- "):  # response
+                    response_heading = line.split("- ")[-1].split("utter_")[-1].strip()
+                    if find(current_intent, lambda n: n.name == response_heading and isinstance(n, ResponseStoryNode), maxlevel=2):
+                        current_response = find(current_intent, lambda n: n.name == response_heading and isinstance(n, ResponseStoryNode), maxlevel=2)
                     else:
-                        current_answer = self.chains[current_chain]
-                    last_chain_response = current_chain
+                        resp_node = find(self.resp.tree, lambda n: n.name == response_heading)
+                        current_response = ResponseStoryNode(item=resp_node.item, parent=current_intent)
+
+    def export_to_pysg_tree(self):
+        def insert_branch(branch, parent):
+            values = " | ".join([kid.name for kid in branch.item.own_tree.children])
+            branch_type = TYPE_INTENT if isinstance(branch, IntentStoryNode) else TYPE_RESPONSE
+            new_parent = tree_data.Insert(parent=parent, key=branch.id, text=branch.item.name, values=[branch_type, values])
+            for child in branch.children:
+                insert_branch(child, new_parent)
+
+        tree_data = EditableTreeData()
+        for item in self.tree.children:
+            insert_branch(item, '')
+
+        self.export_data()
+        return tree_data
 
     def export_data(self):
         result = StringIO()
-        for key in self.tree.get_last_of_family_nodes():
-            story = self.tree.get_family_tree_in_story_format(key)[::-1]
-            story_heading = "-".join([item[0] for item in story if item[1] == TYPE_INTENT])
+        for leaf in self.tree.leaves:
+            path = list(leaf.iter_path_reverse())[:-1][::-1]
+            story_heading = "-".join([item.name for item in path if isinstance(item, IntentStoryNode)])
             result.write(f"\n\n## {story_heading}")
-            for item in story:
-                if item[1] == TYPE_INTENT:
-                    result.write(f"\n* {item[0]}")
-                elif item[1] == TYPE_RESPONSE:
-                    result.write(f"\n    - utter_{item[0]}")
+            for item in path:
+                if isinstance(item, IntentStoryNode):
+                    result.write(f"\n* {item}")
+                elif isinstance(item, ResponseStoryNode):
+                    result.write(f"\n    - utter_{item}")
         return result
 
-    def add_item(self, parent_key, parent_type, text):
-        chain_value = (self.tree.get_family_tree(parent_key) + '-' + text).strip("-")
-        current_obj = ''
-        object_type = TYPE_INTENT if parent_type in (TYPE_RESPONSE, 'root') else TYPE_RESPONSE
-        handler = self.nlu if object_type == TYPE_INTENT else self.resp
-        icon = QUESTION_ICON if object_type == TYPE_INTENT else ANSWER_ICON
-        if chain_value in self.chains:
-            current_obj = self.chains[chain_value]
-        else:
-            object_texts = " | ".join([child.text for child in handler.tree_data.get_node_data_by_key(handler.items[text])['children']])
-            current_obj = self.tree_data.Insert(parent_key, key=str(uuid4()), text=text, values=[object_type, object_texts], icon=QUESTION_ICON)
-            self.chains['chain_value'] = current_obj
-            self.tree.Update(values=self.tree_data)
-        self.tree.see(current_obj)
-        self.tree.selection_set([current_obj])
-        return current_obj
+    def get_parent_node_by_object_id(self, object_id):
+        parent_node = find(self.tree, lambda n: n.id == object_id).parent
+        return parent_node
 
-    def sort_alphabetically(self):
-        self.tree.sort_alphabetically()
+    def get_available_children_by_parent_id(self, parent_object_id):
+        parent_node = find(self.tree, lambda n: n.id == parent_object_id)
+        available_values = None
+        if isinstance(parent_node, ResponseStoryNode) or isinstance(parent_node, BaseNode):
+            available_values = sorted([child.name for child in self.nlu.tree.children])
+        elif isinstance(parent_node, IntentStoryNode):
+            available_values = sorted([child.name for child in self.resp.tree.children])
+        return available_values
+
+    def add_item(self, parent_object_id, text):
+        parent_node = find(self.tree, lambda n: n.id == parent_object_id)
+        existing_node = find(parent_node, lambda n: n.name == text, maxlevel=2)
+        if existing_node:
+            new_item = existing_node
+        elif isinstance(parent_node, ResponseStoryNode) or isinstance(parent_node, BaseNode):
+            add_node = find(self.nlu.tree, lambda n: n.name == text)
+            new_item = IntentStoryNode(item=add_node.item, parent=parent_node)
+        elif isinstance(parent_node, IntentStoryNode):
+            add_node = find(self.resp.tree, lambda n: n.name == text)
+            new_item = ResponseStoryNode(item=add_node.item, parent=parent_node)
+        return new_item
+
+    def remove_item(self, node_id):
+        node = find(self.tree, lambda n: n.id == node_id)
+        print(node.item.story_tree)
+        node.parent = None
+        print(node.item.story_tree)
+

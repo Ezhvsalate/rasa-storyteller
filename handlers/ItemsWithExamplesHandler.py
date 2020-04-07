@@ -5,6 +5,7 @@ from anytree.search import find
 
 from core.EditableTreeData import EditableTreeData
 from handlers.AbstractHandler import AbstractHandler
+from models.BaseNode import BaseNode, BaseItem
 
 
 class ItemsWithExamplesHandler(AbstractHandler, ABC):
@@ -14,7 +15,8 @@ class ItemsWithExamplesHandler(AbstractHandler, ABC):
         self.filename = filename
         self.items = []
         self.tree = Node("root", text='')
-        self.parent_nodes_class = Node
+        self.parent_nodes_class = BaseNode
+        self.parent_object_class = BaseItem
         self.child_nodes_class = Node
 
     def add_to_items(self, key):
@@ -26,13 +28,13 @@ class ItemsWithExamplesHandler(AbstractHandler, ABC):
     def export_to_pysg_tree(self):
         tree_data = EditableTreeData()
         for item in self.tree.children:
-            tree_data.Insert(parent='', key=item.name, text=item.name, values=[])
+            tree_data.Insert(parent='', key=item.item.name, text=item.item.name, values=[])
             for example in item.children:
-                tree_data.Insert(parent=item.name, key=example.name, text=example.name, values=[])
+                tree_data.Insert(parent=item.item.name, key=example.name, text=example.name, values=[])
         return tree_data
 
     def add_node_with_kids(self, parent_name, *kids):
-        current_parent = self.parent_nodes_class(name=parent_name, parent=self.tree)
+        current_parent = self.parent_nodes_class(self.parent_object_class(name=parent_name), parent=self.tree)
         self.add_to_items(parent_name)
         for kid in kids:
             self.child_nodes_class(name=kid, parent=current_parent)
@@ -54,8 +56,14 @@ class ItemsWithExamplesHandler(AbstractHandler, ABC):
         self.items.remove(node.name)
         self.add_to_items(new_value)
         node.name = new_value
+        if isinstance(node, self.parent_nodes_class):
+            node.item.name = new_value
 
     def remove_node(self, node):
         node = find(self.tree, lambda n: n.name == node, maxlevel=3)
-        node.parent = None
-        self.items.remove(node.name)
+        item = node.item
+        if not item.story_tree:
+            node.parent = None
+            self.items.remove(node.name)
+        else:
+            raise ValueError("Item is used in stories and can't be removed.")

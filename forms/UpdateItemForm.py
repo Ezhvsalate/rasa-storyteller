@@ -9,13 +9,14 @@ class UpdateItemForm(object):
     INPUT_KEY = 'updated_text'
     ITEM_WITH_KEY_EXISTS_ERROR = "Item with such name/text already exists."
 
-    def __init__(self, return_to, form_name, updated_item_key, updated_item_type, handler, tree, stories):
+    def __init__(self, return_to, form_name, updated_item_key, updated_item_type, handler, tree, stories, stories_tree):
         self.return_to = return_to
         self.updated_item_key = updated_item_key
         self.updated_item_type = updated_item_type
         self.handler = handler
         self.stories = stories
         self.tree = tree
+        self.stories_tree = stories_tree
         self.form = sg.FlexForm(form_name, return_keyboard_events=True)
 
     def layout(self, old_text):
@@ -36,7 +37,6 @@ class UpdateItemForm(object):
 
     def process(self):
         self.return_to.Disable()
-        # node_data = self.handler.tree_data.get_node_data_by_key(self.updated_item_key)
         self.form.Layout(self.layout(self.updated_item_key))
 
         while True:
@@ -45,14 +45,10 @@ class UpdateItemForm(object):
                 error = self.validate(values)
                 if not error:
                     self.handler.update_node_value(self.updated_item_key, values['updated_text'])
-                    # TODO when refactoring stories tree
-                    # for item in self.stories.tree_data.tree_dict.keys():
-                    #     data = self.stories.tree_data.get_node_data_by_key(item)
-                    #     if data['values'] and data['values'][0] == self.updated_item_type and data['text'] == node_data['text']:
-                    #         self.stories.tree.update_node(item, values['updated_text'])
                     self.tree.Update(self.handler.export_to_pysg_tree())
                     self.tree.see(values['updated_text'])
                     self.tree.selection_set([values['updated_text']])
+                    self.stories_tree.Update(self.stories.export_to_pysg_tree())
                 else:
                     sg.Popup(error, icon=sg.SYSTEM_TRAY_MESSAGE_ICON_CRITICAL, keep_on_top=True)
                 self.form.close()

@@ -30,7 +30,7 @@ def button_params(button_image):
     return button_params
 
 
-def generate_main_window_layout(nlu_tree_data, response_tree):
+def generate_main_window_layout(nlu_tree_data, response_tree, stories_tree):
     intent_tab_layout = [[sg.Text(TAB_INTENTS_DESCRIPTION)],
                          [nlu_tree_data],
                          [sg.Button(ACTION_ADD_INTENT, **button_params(green_button)),
@@ -46,12 +46,10 @@ def generate_main_window_layout(nlu_tree_data, response_tree):
                             sg.Button(ACTION_REMOVE_RESPONSE, **button_params(orange_button))]]
 
     stories_tab_layout = [[sg.Text(TAB_STORIES_DESCRIPTION)],
-                          # [stories_tree],
+                          [stories_tree],
                           [sg.Button(ACTION_ADD_CHILD, **button_params(green_button)),
                            sg.Button(ACTION_ADD_SIBLING, **button_params(green_button)),
-                           sg.Button(ACTION_REMOVE_STORY_ITEM, **button_params(orange_button)),
-                           sg.Button(ACTION_MOVE_STORY_ITEM_UP, **button_params(black_button)),
-                           sg.Button(ACTION_MOVE_STORY_ITEM_DOWN, **button_params(black_button))]]
+                           sg.Button(ACTION_REMOVE_STORY_ITEM, **button_params(orange_button))]]
 
     main_window_layout = [[sg.TabGroup([[sg.Tab(TAB_INTENTS_HEADING, intent_tab_layout),
                                          sg.Tab(TAB_RESPONSES_HEADING, response_tab_layout),
