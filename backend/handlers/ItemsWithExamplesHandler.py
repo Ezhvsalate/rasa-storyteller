@@ -37,7 +37,8 @@ class ItemsWithExamplesHandler(AbstractHandler, ABC):
         return tree_data
 
     def add_node_with_kids(self, parent_name, *kids):
-        current_parent = self.parent_nodes_class(self.parent_object_class(name=parent_name), parent=self.tree)
+        item = self.parent_object_class(name=parent_name)
+        current_parent = self.parent_nodes_class(item, parent=self.tree)
         self.add_to_items(parent_name)
         for kid in kids:
             self.child_nodes_class(name=kid, parent=current_parent)

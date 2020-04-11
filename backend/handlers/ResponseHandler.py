@@ -8,6 +8,7 @@ class ResponseHandler(ItemsWithExamplesHandler):
 
     def __init__(self, filename, *args):
         super().__init__(filename, *args)
+        self.parent_object_class = Response
         self.parent_nodes_class = ResponseNode
         self.child_nodes_class = ResponseExample
 
@@ -26,9 +27,9 @@ class ResponseHandler(ItemsWithExamplesHandler):
         responses = []
         result = {}
         for response in self.tree.children:
-            responses.append(f"utter_{response.text}")
-            result[f"utter_{response.text}"] = []
+            responses.append(f"utter_{response.item.name}")
+            result[f"utter_{response.name}"] = []
             for kid in response.children:
-                result[f"utter_{response.text}"].append({"text": str(kid.text.strip())})
+                result[f"utter_{response.item.name}"].append({"text": str(kid.name.strip())})
         return {"responses": result,
                 "actions": responses}

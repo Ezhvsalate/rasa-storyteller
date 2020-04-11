@@ -8,9 +8,10 @@ class Response:
         self.name = name
         self.own_tree = None
         self.story_tree = []
+        print(self.name, self.story_tree)
 
     def __repr__(self):
-        return str(self.name)
+        return f"response_object_{self.name}"
 
 
 class ResponseNode(NodeMixin):
@@ -26,7 +27,7 @@ class ResponseNode(NodeMixin):
         self.item.own_tree = self
 
     def __repr__(self):
-        return str(self.name)
+        return f"response_node_{self.name}"
 
 
 class ResponseExample(NodeMixin):
@@ -37,7 +38,7 @@ class ResponseExample(NodeMixin):
         self.parent = parent
 
     def __repr__(self):
-        return str(self.name)
+        return f"response_example_{self.name}"
 
 
 class ResponseStoryNode(NodeMixin):
@@ -54,4 +55,4 @@ class ResponseStoryNode(NodeMixin):
         self.item.story_tree.append(self)
 
     def __repr__(self):
-        return str(self.name + '_' + self.id)
+        return f"story_response_node_{self.name}_{self.id}"

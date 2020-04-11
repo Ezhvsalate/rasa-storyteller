@@ -10,6 +10,7 @@ class NLUHandler(ItemsWithExamplesHandler):
 
     def __init__(self, filename, *args):
         super().__init__(filename, *args)
+        self.parent_object_class = Intent
         self.parent_nodes_class = IntentNode
         self.child_nodes_class = IntentExample
 
@@ -32,9 +33,9 @@ class NLUHandler(ItemsWithExamplesHandler):
         intents = []
         writer = mg.Writer(result)
         for intent in self.tree.children:
-            intents.append(intent.text)
-            writer.write_heading(f"intent:{intent.text}", 2)
-            examples = [f"- {example.text}".strip() for example in intent.children]
+            intents.append(intent.item.name)
+            writer.write_heading(f"intent:{intent.item.name}", 2)
+            examples = [f"- {example.name}".strip() for example in intent.children]
             writer.writelines(examples)
         return {"result": result,
                 "intents": intents}

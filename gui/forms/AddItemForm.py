@@ -9,7 +9,9 @@ class AddItemForm(object):
     EMPTY_NAME_ERROR = "Name cannot be empty."
     NO_EXAMPLES_ERROR = "There should be at least one example."
     INPUT_KEY_NAME = 'item_name'
-    ITEM_WITH_KEY_EXISTS_ERROR = "Item with such name/text already exists."
+    ITEM_WITH_KEY_EXISTS_ERROR = "Item with such name/example text already exists. All elements in a tree should be unique."
+    ITEM_NAME_IS_DUPLICATED_IN_EXAMPLES = "Item name is duplicated in one of examples"
+    THERE_ARE_DUPLICATES_IN_EXAMPLES = "There are duplicates in examples. Examples should be unique."
 
     def __init__(self, return_to, form_name, item_type, handler, tree):
         self.return_to = return_to
@@ -37,26 +39,31 @@ class AddItemForm(object):
         ]
         return layout
 
-    def validate(self, values):
+    def validate(self, new_item_name, children_texts):
         error = None
-        if values[self.INPUT_KEY_NAME] == '':
+        if new_item_name == '':
             error = self.EMPTY_NAME_ERROR
-        elif all([v == '' for k, v in values.items() if k != self.INPUT_KEY_NAME]):
+        elif all([v == '' for v in children_texts]):
             error = self.NO_EXAMPLES_ERROR
-        elif values[self.INPUT_KEY_NAME] in self.handler.items:
+        elif new_item_name in self.handler.items:
             error = self.ITEM_WITH_KEY_EXISTS_ERROR
+        elif any([v in self.handler.items for v in children_texts]):
+            error = self.ITEM_WITH_KEY_EXISTS_ERROR
+        elif new_item_name in children_texts:
+            error = self.ITEM_NAME_IS_DUPLICATED_IN_EXAMPLES
+        elif len(set(children_texts)) != len(children_texts):
+            error = self.THERE_ARE_DUPLICATES_IN_EXAMPLES
         return error
 
     def process(self):
         self.return_to.Disable()
-        new_item = None
         while True:
             button, values = self.form.Read()
+            new_item = values[self.INPUT_KEY_NAME]
+            children_texts = [value for value in [v for k, v in values.items() if k != self.INPUT_KEY_NAME and v != '']]
             if button in DEFAULT_FORM_SUBMIT_ACTIONS:
-                error = self.validate(values)
+                error = self.validate(new_item, children_texts)
                 if not error:
-                    new_item = values[self.INPUT_KEY_NAME]
-                    children_texts = [value for value in [v for k, v in values.items() if k != self.INPUT_KEY_NAME and v != '']]
                     self.handler.add_node_with_kids(values[self.INPUT_KEY_NAME], *children_texts)
                     self.tree.Update(self.handler.export_to_pysg_tree())
                     self.tree.see(new_item)

@@ -1,6 +1,11 @@
+import os
+from pathlib import Path
+from time import time
+
 import PySimpleGUI as sg
 
 import gui.layout as lt
+from backend.handlers.Exporter import Exporter
 from backend.handlers.NLUHandler import NLUHandler
 from backend.handlers.ResponseHandler import ResponseHandler
 from backend.handlers.StoriesHandler import StoriesHandler
@@ -117,14 +122,16 @@ def launcher():
             if event == ACTION_REMOVE_STORY_ITEM and values[STORIES_TREE_KEY]:
                 RemoveStoryItemForm(item_key=values[STORIES_TREE_KEY][0], stories=stories, tree=stories_tree).process()
 
-            # if event == ACTION_ADD_NEW_ITEM_AS_A_CHILD and values[STORIES_TREE_KEY]:
-            #     parent_key = values[STORIES_TREE_KEY][0]
-            #     parent_type = stories.tree.TreeData.get_node_data_by_key(parent_key)['values'][0]
-            #     handler = nlu if parent_type == TYPE_RESPONSE else resp
-            #     item_type = TYPE_INTENT if parent_type == TYPE_RESPONSE else TYPE_RESPONSE
-            #     new_item = AddItemForm(return_to=main_window, form_name=FORM_NAME_ADD_STORY_ITEM, item_type=item_type, handler=handler).process()
-            #     if new_item:
-            #         stories.add_item(parent_key, parent_type, handler.tree_data.get_node_data_by_key(new_item)['text'])
+            if event == ACTION_ADD_NEW_ITEM_AS_A_CHILD and values[STORIES_TREE_KEY]:
+                parent_key = values[STORIES_TREE_KEY][0]
+                child_type, child_handler = stories.get_child_type_and_handler_by_id(object_id=parent_key)
+                tree = nlu_tree if child_handler == nlu else resp_tree
+                child = AddItemForm(return_to=main_window, form_name=FORM_NAME_ADD_STORY_ITEM, item_type=child_type, handler=child_handler, tree=tree).process()
+                if child:
+                    story_node = stories.add_item(parent_key, child)
+                    stories_tree.Update(stories.export_to_pysg_tree())
+                    stories_tree.see(story_node.id)
+                    stories_tree.selection_set([story_node.id])
 
             if event in (ACTION_UPDATE_RESPONSE, ACTION_REMOVE_RESPONSE, ACTION_ADD_RESPONSE_EXAMPLE) and not values[RESPONSE_TREE_KEY] \
                     or event in (ACTION_UPDATE_INTENT, ACTION_REMOVE_INTENT, ACTION_ADD_INTENT_EXAMPLE) and not values[INTENT_TREE_KEY] \
@@ -132,12 +139,12 @@ def launcher():
                                  ) and not values[STORIES_TREE_KEY]:
                 sg.Popup(MSG_FIRST_SELECT_ITEM, icon=sg.SYSTEM_TRAY_MESSAGE_ICON_WARNING, keep_on_top=True, button_type=sg.POPUP_BUTTONS_NO_BUTTONS)
 
-            # if event == ACTION_EXPORT_DATA:
-            #     Path(f"{os.getcwd()}/export").mkdir(exist_ok=True, parents=False)
-            #     ts_suffix = int(time())
-            #     exporter = Exporter(nlu, resp, stories, f"export/nlu_{ts_suffix}.md", f"export/domain_{ts_suffix}.yml", f"export/stories_{ts_suffix}.md")
-            #     exporter.export()
-            #     sg.Popup(MSG_EXPORT_SUCCESSFUL, icon=sg.SYSTEM_TRAY_MESSAGE_ICON_INFORMATION, keep_on_top=True, button_type=sg.POPUP_BUTTONS_NO_BUTTONS)
+            if event == ACTION_EXPORT_DATA:
+                Path(f"{os.getcwd()}/export").mkdir(exist_ok=True, parents=False)
+                ts_suffix = int(time())
+                exporter = Exporter(nlu, resp, stories, f"export/nlu_{ts_suffix}.md", f"export/domain_{ts_suffix}.yml", f"export/stories_{ts_suffix}.md")
+                exporter.export()
+                sg.Popup(MSG_EXPORT_SUCCESSFUL, icon=sg.SYSTEM_TRAY_MESSAGE_ICON_INFORMATION, keep_on_top=True, button_type=sg.POPUP_BUTTONS_NO_BUTTONS)
 
             if event in (None, ACTION_CLOSE_WINDOW):
                 break

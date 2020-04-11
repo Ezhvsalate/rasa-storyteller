@@ -10,7 +10,7 @@ class Intent:
         self.story_tree = []
 
     def __repr__(self):
-        return str(self.name)
+        return f"intent_object_{self.name}"
 
 
 class IntentNode(NodeMixin):
@@ -26,7 +26,7 @@ class IntentNode(NodeMixin):
         self.item.own_tree = self
 
     def __repr__(self):
-        return str(self.name)
+        return f"intent_node_{self.name}"
 
 
 class IntentStoryNode(NodeMixin):
@@ -43,7 +43,7 @@ class IntentStoryNode(NodeMixin):
         self.item.story_tree.append(self)
 
     def __repr__(self):
-        return str(self.name + '_' + self.id)
+        return f"story_response_node_{self.name}_{self.id}"
 
 
 class IntentExample(NodeMixin):
@@ -54,4 +54,4 @@ class IntentExample(NodeMixin):
         self.parent = parent
 
     def __repr__(self):
-        return str(self.name)
+        return f"intent_example_{self.name}"

@@ -67,18 +67,40 @@ class StoriesHandler(AbstractHandler):
         result = StringIO()
         for leaf in self.tree.leaves:
             path = list(leaf.iter_path_reverse())[:-1][::-1]
-            story_heading = "-".join([item.name for item in path if isinstance(item, IntentStoryNode)])
+            story_heading = "-".join([item.item.name for item in path if isinstance(item, IntentStoryNode)])
             result.write(f"\n\n## {story_heading}")
             for item in path:
                 if isinstance(item, IntentStoryNode):
-                    result.write(f"\n* {item}")
+                    result.write(f"\n* {item.item.name}")
                 elif isinstance(item, ResponseStoryNode):
-                    result.write(f"\n    - utter_{item}")
+                    result.write(f"\n    - utter_{item.item.name}")
         return result
 
     def get_parent_node_by_object_id(self, object_id):
         parent_node = find(self.tree, lambda n: n.id == object_id).parent
         return parent_node
+
+    def get_object_type_and_handler_by_id(self, object_id):
+        node = find(self.tree, lambda n: n.id == object_id)
+        if isinstance(node, ResponseStoryNode):
+            result = {'type': TYPE_RESPONSE, 'handler': self.nlu}
+        elif isinstance(node, IntentStoryNode):
+            result = {'type': TYPE_INTENT, 'handler': self.resp}
+        else:
+            result = {'type': TYPE_ROOT, 'handler': None}
+        return result
+
+    def get_child_type_and_handler_by_id(self, object_id):
+        node = find(self.tree, lambda n: n.id == object_id)
+        child_type = None
+        child_handler = None
+        if isinstance(node, ResponseStoryNode) or isinstance(node, BaseNode):
+            child_type = TYPE_INTENT
+            child_handler = self.nlu
+        elif isinstance(node, IntentStoryNode):
+            child_type = TYPE_RESPONSE
+            child_handler = self.resp
+        return child_type, child_handler
 
     def get_available_children_by_parent_id(self, parent_object_id):
         parent_node = find(self.tree, lambda n: n.id == parent_object_id)
@@ -92,6 +114,8 @@ class StoriesHandler(AbstractHandler):
     def add_item(self, parent_object_id, text):
         parent_node = find(self.tree, lambda n: n.id == parent_object_id)
         existing_node = find(parent_node, lambda n: n.name == text, maxlevel=2)
+        print(parent_node)
+        new_item = None
         if existing_node:
             new_item = existing_node
         elif isinstance(parent_node, ResponseStoryNode) or isinstance(parent_node, BaseNode):
