@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class Handler(ABC):
-
+class AbstractHandler(ABC):
     @abstractmethod
     def __init__(self, filename, *args):
         pass
@@ -13,8 +12,4 @@ class Handler(ABC):
 
     @abstractmethod
     def export_data(self):
-        pass
-
-    @abstractmethod
-    def sort_alphabetically(self):
         pass
