@@ -11,12 +11,11 @@ from common.constants import QUESTION_ICON, ANSWER_ICON
 
 
 class ItemsWithExamplesHandler(AbstractHandler, ABC):
-
     def __init__(self, filename, *args):
         super().__init__(filename, *args)
         self.filename = filename
         self.items = []
-        self.tree = Node("root", text='')
+        self.tree = Node("root", text="")
         self.parent_nodes_class = BaseNode
         self.parent_object_class = BaseItem
         self.child_nodes_class = Node
@@ -28,12 +27,26 @@ class ItemsWithExamplesHandler(AbstractHandler, ABC):
             self.items.append(key)
 
     def export_to_pysg_tree(self):
-        parent_icon = QUESTION_ICON if self.parent_nodes_class == IntentNode else ANSWER_ICON
+        parent_icon = (
+            QUESTION_ICON if self.parent_nodes_class == IntentNode else ANSWER_ICON
+        )
         tree_data = TreeData()
         for item in self.tree.children:
-            tree_data.Insert(parent='', key=item.item.name, text=item.item.name, values=[], icon=parent_icon)
+            tree_data.Insert(
+                parent="",
+                key=item.item.name,
+                text=item.item.name,
+                values=[],
+                icon=parent_icon,
+            )
             for example in item.children:
-                tree_data.Insert(parent=item.item.name, key=example.name, text=example.name, values=[], icon=ANSWER_ICON)
+                tree_data.Insert(
+                    parent=item.item.name,
+                    key=example.name,
+                    text=example.name,
+                    values=[],
+                    icon=ANSWER_ICON,
+                )
         return tree_data
 
     def add_node_with_kids(self, parent_name, *kids):
@@ -67,9 +80,10 @@ class ItemsWithExamplesHandler(AbstractHandler, ABC):
 
     def remove_node(self, node):
         node = find(self.tree, lambda n: n.name == node, maxlevel=3)
-        item = node.item
-        if not item.story_tree:
+        if not hasattr(node, "item") or not node.item.story_tree:
             node.parent = None
             self.items.remove(node.name)
+            for kid in node.children:
+                self.items.remove(kid.name)
         else:
             raise ValueError("Item is used in stories and can't be removed.")

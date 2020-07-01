@@ -5,30 +5,34 @@ from gui.layout import button_params
 
 
 class AddExampleForm(object):
-    FORM_NAME = 'Add example'
-    INPUT_LABEL = 'Example'
+    FORM_NAME = "Add example"
+    INPUT_LABEL = "Example"
     EMPTY_TEXT_ERROR = "Text cannot be empty."
     ITEM_WITH_KEY_EXISTS_ERROR = "Item with such name/text already exists."
-    INPUT_KEY = 'example_text'
+    INPUT_KEY = "example_text"
 
     def __init__(self, return_to, parent_name, handler, tree):
         self.return_to = return_to
         self.parent_name = parent_name
         self.handler = handler
         self.tree = tree
-        self.form = sg.FlexForm(self.FORM_NAME, return_keyboard_events=True).layout(self.layout())
+        self.form = sg.FlexForm(self.FORM_NAME, return_keyboard_events=True).layout(
+            self.layout()
+        )
 
     def layout(self):
         layout = [
             [sg.Text(self.INPUT_LABEL), sg.InputText(key=self.INPUT_KEY)],
-            [sg.Button(ACTION_SUBMIT, **button_params(green_button)),
-             sg.Button(ACTION_CANCEL, **button_params(orange_button))]
+            [
+                sg.Button(ACTION_SUBMIT, **button_params(green_button)),
+                sg.Button(ACTION_CANCEL, **button_params(orange_button)),
+            ],
         ]
         return layout
 
     def validate(self, values):
         error = None
-        if values[self.INPUT_KEY] == '':
+        if values[self.INPUT_KEY] == "":
             error = self.EMPTY_TEXT_ERROR
         if values[self.INPUT_KEY] in self.handler.items:
             error = self.ITEM_WITH_KEY_EXISTS_ERROR
@@ -48,7 +52,11 @@ class AddExampleForm(object):
                     self.tree.see(new_item)
                     self.tree.selection_set([new_item])
                 else:
-                    sg.Popup(error, icon=sg.SYSTEM_TRAY_MESSAGE_ICON_CRITICAL, keep_on_top=True)
+                    sg.Popup(
+                        error,
+                        icon=sg.SYSTEM_TRAY_MESSAGE_ICON_CRITICAL,
+                        keep_on_top=True,
+                    )
                 self.form.close()
                 break
             elif button in DEFAULT_FORM_CANCEL_ACTIONS:

@@ -16,10 +16,17 @@ class RemoveItemForm(object):
 
     def process(self):
         try:
-            prev_node = self.tree.get_previous_sibling(self.item_key, parent_if_none=True)
+            prev_node = self.tree.get_previous_sibling(
+                self.item_key, parent_if_none=True
+            )
             self.handler.remove_node(self.item_key)
         except ValueError as e:
-            sg.Popup(e, icon=sg.SYSTEM_TRAY_MESSAGE_ICON_WARNING, keep_on_top=True, button_type=sg.POPUP_BUTTONS_NO_BUTTONS)
+            sg.Popup(
+                e,
+                icon=sg.SYSTEM_TRAY_MESSAGE_ICON_WARNING,
+                keep_on_top=True,
+                button_type=sg.POPUP_BUTTONS_NO_BUTTONS,
+            )
         else:
             self.tree.Update(self.handler.export_to_pysg_tree())
             self.tree.see(prev_node)

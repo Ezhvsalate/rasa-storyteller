@@ -8,7 +8,6 @@ class Response:
         self.name = name
         self.own_tree = None
         self.story_tree = []
-        print(self.name, self.story_tree)
 
     def __repr__(self):
         return f"response_object_{self.name}"
@@ -31,7 +30,6 @@ class ResponseNode(NodeMixin):
 
 
 class ResponseExample(NodeMixin):
-
     def __init__(self, name, parent: ResponseNode):
         super(ResponseExample, self).__init__()
         self.name = name

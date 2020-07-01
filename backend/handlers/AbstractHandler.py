@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class AbstractHandler(ABC):
-
     @abstractmethod
     def __init__(self, filename, *args):
         pass

@@ -17,7 +17,7 @@ class ExtendedTree(sg.Tree):
 
     def get_previous_sibling(self, item, parent_if_none=False):
         prev = self.TKTreeview.prev(self.KeyToID[item])
-        if prev == '':
+        if prev == "":
             result = self.get_parent(item) if parent_if_none else None
         else:
             result = self.IdToKey[prev]

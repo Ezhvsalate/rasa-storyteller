@@ -4,3 +4,5 @@ export/*
 build/*
 rasa_storyteller.egg-info/*
 dist/*
+.mypy_cache/*
+*/export/*

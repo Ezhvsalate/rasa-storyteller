@@ -47,7 +47,6 @@ class IntentStoryNode(NodeMixin):
 
 
 class IntentExample(NodeMixin):
-
     def __init__(self, name, parent: IntentNode):
         super(IntentExample, self).__init__()
         self.name = name
