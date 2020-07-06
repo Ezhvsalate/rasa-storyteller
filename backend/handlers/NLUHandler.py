@@ -32,8 +32,8 @@ class NLUHandler(ItemsWithExamplesHandler):
                             lambda node: node.name == example["intent"],
                             maxlevel=2,
                         )
-                    IntentExample(name=example["text"], parent=current_intent)
-                    self.add_to_items(example["text"])
+                    IntentExample(name=example["example"], parent=current_intent)
+                    self.add_to_items(example["example"])
 
         except json.JSONDecodeError:  # suggest it's markdown
             with open(self.filename, "r", encoding="utf-8") as df:

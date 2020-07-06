@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
-with open("README.md", "r") as f:
+with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
     name="rasa-storyteller",
-    version="0.2",
+    version="0.2.1",
     author="ezhvsalate",
     author_email="ezhvsalate@ya.ru",
     description="A simple GUI utility to create complex stories for RASA chatbots easily.",
