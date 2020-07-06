@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.2.1] - 2020-07-06
+### Fixed
+- Encoding issue occuring during installations on some systems
+- 'Invalid or unexistent files' error when importing json files
+
 ## [0.2.0] - 2020-07-01
 ### Changed
 - Logic of PySimpleGui UI is split from processing data

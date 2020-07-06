@@ -38,7 +38,7 @@ def launcher():
 
                 stories = StoriesHandler(values[STORIES_FILE_KEY], nlu, resp)
                 stories.import_data()
-            except (FileNotFoundError, KeyError):
+            except (FileNotFoundError, KeyError, AttributeError):
                 sg.Popup(
                     MSG_INVALID_OR_UNEXISTING_FILE,
                     icon=sg.SYSTEM_TRAY_MESSAGE_ICON_WARNING,
@@ -50,7 +50,7 @@ def launcher():
             break
         import_window.close()
 
-    if nlu:  # and resp and stories:
+    if nlu and resp and stories:
         nlu_tree = ExtendedTree(
             data=nlu.export_to_pysg_tree(),
             headings=[],
