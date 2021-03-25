@@ -18,7 +18,7 @@ setup(
         "PySimpleGUI==4.22.0",
         "AnyTree==2.8.0",
         "markdown-generator==0.1.3",
-        "PyYAML==5.3.1",
+        "PyYAML==5.4",
         "Pillow==7.2.0",
     ],
     entry_points="""
