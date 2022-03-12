@@ -19,7 +19,7 @@ setup(
         "AnyTree==2.8.0",
         "markdown-generator==0.1.3",
         "PyYAML==5.3.1",
-        "Pillow==7.2.0",
+        "Pillow==9.0.1",
     ],
     entry_points="""
         [console_scripts]
